@@ -1,0 +1,26 @@
+name: Run
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Token
+        id: renovate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: Run
+        uses: docker://renovate/renovate:latest
+        env: 
+          RENOVATE_PLATFORM: "github"
+          RENOVATE_TOKEN: ${{ steps.renovate-token.outputs.token }}
+          RENOVATE_GIT_AUTHOR: "distroless-php Renovate<distroless-php-renovate[bot]@users.noreply.github.com>"
+          RENOVATE_AUTODISCOVER: "true"
+          RENOVATE_CONFIG: '{"allowedPostUpgradeCommands": [".*"], "prHourlyLimit": 0}'
